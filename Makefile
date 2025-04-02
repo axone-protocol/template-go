@@ -17,9 +17,9 @@ COLOR_RESET  = $(shell tput -Txterm sgr0)
 VERSION  := $(shell cat version)
 COMMIT   := $(shell git log -1 --format='%H')
 LD_FLAGS  = \
-	-X okp4/template-go/internal/version.Name=$(BINARY_NAME) \
-	-X okp4/template-go/internal/version.Version=$(VERSION)  \
-	-X okp4/template-go/internal/version.Commit=$(COMMIT)
+	-X axone-protocol/template-go/internal/version.Name=$(BINARY_NAME) \
+	-X axone-protocol/template-go/internal/version.Version=$(VERSION)  \
+	-X axone-protocol/template-go/internal/version.Commit=$(COMMIT)
 BUILD_FLAGS := -ldflags '$(LD_FLAGS)'
 
 # Commands

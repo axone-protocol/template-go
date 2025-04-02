@@ -29,11 +29,12 @@ jobs:
         run: |
           make test-go
 
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
+      - name: Upload coverage
+        uses: codecov/codecov-action@v5
         if: github.actor != 'dependabot[bot]'
         with:
-          files: ./target/coverage.out
+          files: ./target/coverage.txt
           env_vars: OS,GOLANG
-          fail_ci_if_error: true
+          fail_ci_if_error: false
           verbose: true
+          token: ${{ secrets.CODECOV_TOKEN }}

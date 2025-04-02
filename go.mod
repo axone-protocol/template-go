@@ -1,4 +1,4 @@
-module okp4/template-go
+module axone-protocol/template-go
 
 go 1.21
 

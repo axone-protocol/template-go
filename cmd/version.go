@@ -1,8 +1,8 @@
 package cmd
 
 import (
+	"axone-protocol/template-go/internal/version"
 	"encoding/json"
-	"okp4/template-go/internal/version"
 	"strings"
 
 	"github.com/spf13/cobra"
