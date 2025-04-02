@@ -14,3 +14,13 @@ func TestPrintHelloWorld(t *testing.T) {
 		})
 	})
 }
+
+func TestPrintHelloWorldCommand(t *testing.T) {
+	Convey("When the hello-world command is executed", t, func() {
+		helloWorld.SetArgs([]string{})
+		err := helloWorld.Execute()
+		Convey("It should not return an error", func() {
+			So(err, ShouldBeNil)
+		})
+	})
+}
