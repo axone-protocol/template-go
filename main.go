@@ -1,6 +1,6 @@
 package main
 
-import "okp4/template-go/cmd"
+import "axone-protocol/template-go/cmd"
 
 func main() {
 	cmd.Execute()
