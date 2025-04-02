@@ -6,25 +6,25 @@ GOPATH ?= $(shell go env GOPATH)
 CURDIR := $(shell pwd)
 
 # Versions
-GOLANG_VERSION          ?= 1.23
 ALPINE_VERSION          ?= 3.20
-GOLANGCI_LINT_VERSION   ?= v2.0.2
-GOFUMPT_VERSION         ?= v0.7.0
-GOTHANKS_VERSION        ?= latest
-PROTOC_GEN_GO_VERSION   ?= latest
 DOCKER_IMAGE_TAG        ?= latest
+GOFUMPT_VERSION         ?= v0.7.0
+GOLANG_VERSION          ?= 1.23
+GOLANGCI_LINT_VERSION   ?= v2.0.2
+GOTHANKS_VERSION        ?= latest
+TPARSE_VERSION			?= v0.17.0
 
 # Some colors (if supported)
 define get_color
 $(shell tput -Txterm $(1) $(2) 2>/dev/null || echo "")
 endef
 
-COLOR_GREEN  = $(call get_color,setaf,2)
-COLOR_YELLOW = $(call get_color,setaf,3)
-COLOR_WHITE  = $(call get_color,setaf,7)
 COLOR_CYAN   = $(call get_color,setaf,6)
+COLOR_GREEN  = $(call get_color,setaf,2)
 COLOR_RED    = $(call get_color,setaf,1)
 COLOR_RESET  = $(call get_color,sgr0,)
+COLOR_WHITE  = $(call get_color,setaf,7)
+COLOR_YELLOW = $(call get_color,setaf,3)
 
 # Application
 BINARY_NAME   = template-go
@@ -35,12 +35,13 @@ $(info 🐚 ${COLOR_GREEN}Fetching ${COLOR_CYAN}commit${COLOR_RESET} from ${COLO
 COMMIT        = $(shell git log -1 --format='%H')
 
 # Directories
-TOOLS_DIR = ./bin
 TARGET_DIR = ./target
+TOOLS_DIR  = $(TARGET_DIR)/tools
 
-GOLANGCI_LINT_BIN = $(TOOLS_DIR)/$(GOLANGCI_LINT_VERSION)/golangci-lint
-GOTHANKS_BIN      = $(TOOLS_DIR)/$(GOTHANKS_VERSION)/gothanks
-GOFUMPT_BIN       = $(TOOLS_DIR)/$(GOFUMPT_VERSION)/gofumpt
+GOFUMPT_BIN       = $(TOOLS_DIR)/gofumpt/$(GOFUMPT_VERSION)/gofumpt
+GOLANGCI_LINT_BIN = $(TOOLS_DIR)/golangci-lint/$(GOLANGCI_LINT_VERSION)/golangci-lint
+GOTHANKS_BIN      = $(TOOLS_DIR)/gothanks/$(GOTHANKS_VERSION)/gothanks
+TPARSE_BIN		  = $(TOOLS_DIR)/tparse/$(TPARSE_VERSION)/tparse
 
 # Build options
 build_tags += $(BUILD_TAGS)
@@ -79,7 +80,7 @@ deps: ## Download Go module dependencies
 	@go mod download
 
 .PHONY: tools
-tools: $(GOLANGCI_LINT_BIN) $(GOTHANKS_BIN) $(GOFUMPT_BIN) ## Install necessary development tools
+tools: $(GOLANGCI_LINT_BIN) $(GOTHANKS_BIN) $(GOFUMPT_BIN) $(TPARSE_BIN) ## Install necessary development tools
 
 .PHONY: thanks
 thanks: tools ## Thanks to the contributors
@@ -98,9 +99,12 @@ build-go: deps  ## Build executable for the current environment (default build)
 build-go-all: $(ENVIRONMENTS_TARGETS) ## Build executables for all available environments
 
 .PHONY: test
-test: deps ## Run tests
+test: test-go ## Run all the tests
+
+.PHONY: test-go
+test-go: deps tools ## Run tests for Go source code
 	@$(call echo_msg, 🧪, Testing, project, ...)
-	@go test -v ./...
+	@go test -v -coverprofile ./target/coverage.txt ./... -json | $(TPARSE_BIN)
 
 .PHONY: lint
 lint: lint-go ## Lint files
@@ -130,7 +134,7 @@ clean: clean-artifacts clean-tools ## Clean up
 .PHONY: clean-artifacts
 clean-artifacts: ## Clean up build artifacts
 	@$(call echo_msg, 🧹, Cleaning, build artifacts, ...)
-	@rm -f $(BINARY_NAME) $(BINARY_AMD64)
+	@rm -rf $(TARGET_DIR)
 
 .PHONY: clean-tools
 clean-tools: ## Clean up tools
@@ -172,6 +176,11 @@ $(GOFUMPT_BIN):
 	@$(call echo_msg, 📦, Installing, gofumpt, $(COLOR_YELLOW)$(GOFUMPT_VERSION)$(COLOR_RESET)...)
 	@mkdir -p $(dir $(GOFUMPT_BIN))
 	@GOBIN="$$(cd $(dir $(GOFUMPT_BIN)) && pwd)" go install mvdan.cc/gofumpt@$(GOFUMPT_VERSION)
+
+$(TPARSE_BIN):
+	@$(call echo_msg, 📦, Installing, tparse, $(COLOR_YELLOW)$(TPARSE_VERSION)$(COLOR_RESET)...)
+	@mkdir -p $(dir $(TPARSE_BIN))
+	@GOBIN="$$(cd $(dir $(TPARSE_BIN)) && pwd)" go install github.com/mfridman/tparse@$(TPARSE_VERSION)
 
 $(ENVIRONMENTS_TARGETS):
 	@GOOS=$(word 3, $(subst -, ,$@)); \
