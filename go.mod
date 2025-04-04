@@ -1,4 +1,4 @@
-module axone-protocol/template-go
+module github.com/axone-protocol/template-go
 
 go 1.21
 
